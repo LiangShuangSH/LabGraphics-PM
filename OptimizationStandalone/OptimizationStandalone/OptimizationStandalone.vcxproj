@@ -146,7 +146,6 @@
     <ClCompile Include="RoomObject.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Pairwise.h" />
     <ClInclude Include="RoomObject.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

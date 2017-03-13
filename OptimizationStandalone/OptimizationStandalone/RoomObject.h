@@ -12,7 +12,7 @@ enum FurnitureCode {
 	Floor = 2,
 	Bed = 3,
 	Sofa = 4,
-	Desk = 5,
+	PCTable = 5,
 	Chair = 6,
 	Bookcase = 7
 };
@@ -26,10 +26,15 @@ public:
 	double access_space_center[4][2];
 	double access_space_diag[4];
 
+	string pairwise = "";  // indicates the pairwise relationship with prev node
+
 	RoomObject(string type) { this->type = type; }
 	double get_diagnol();
 	void update_access_space(double gap);
 	RoomObject* clone();
+	RoomObject* get_prev_node();
+	void set_prev_node(RoomObject* p);
+	void add_child(RoomObject* c);
 
 private:
 	RoomObject* _prev = NULL;

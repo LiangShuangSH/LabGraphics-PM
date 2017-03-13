@@ -43,5 +43,19 @@ RoomObject* RoomObject::clone() {
 	theClone->width = this->width;
 	theClone->depth = this->depth;
 
+	theClone->pairwise = this->pairwise;
+
 	return theClone;
+}
+
+RoomObject* RoomObject::get_prev_node() {
+	return this->_prev;
+}
+
+void RoomObject::add_child(RoomObject* c) {
+	this->_next.push_back(c);
+}
+
+void RoomObject::set_prev_node(RoomObject* p) {
+	this->_prev = p;
 }

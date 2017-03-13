@@ -9,13 +9,14 @@
 #include <fstream>
 #include <iterator>
 #include <random>
+#include <ctime>
 
 using namespace std;
 
 int ACCESS_SPACE = 4;
 double STANDARD_GAP = 0.2;
 double NO_GAP = 0.0;
-double SCALE = 0.08;
+int STATIC_FNTS = 5;
 
 vector<RoomObject*> translate_furnitures(vector<RoomObject*> fnts, double temp, double walls[], int &chosen_index, int static_fnts);
 vector<RoomObject*> rotate_furnitures(vector<RoomObject*> fnts, double temp, int &chosen_index, int static_fnts);
@@ -25,10 +26,18 @@ double get_prior_distance_cost(FurnitureCode type, double distance);
 double get_prior_theta_cost(FurnitureCode type, double theta);
 void find_closest_wall(int& index, double& min_distance, double distance[], int size);
 double get_theta(int index, double orientation);
+double get_out_of_wall_punishment(RoomObject* f, double walls[]);
 FurnitureCode Hashit(string type);
 void deep_copy_vector(vector<RoomObject*> v, vector<RoomObject*> &new_v);
 double constrainAngle(double x);
 double angleDiff(double a, double b);
+void visualize_in_matlab_code(vector<RoomObject*> fnts, string matlab_file);
+vector<double*> find_four_corners(RoomObject* f);
+double get_pairwise_distance_cost(RoomObject* f);
+double get_pairwise_theta_cost(RoomObject* f);
+double get_pairwise_side_cost(RoomObject* f);
+int find_index(RoomObject* f, vector<RoomObject*> fnts);
+void random_start(vector<RoomObject*> &fnts, double walls[]);
 
 int main(int argc, char** argv) {
 	
@@ -45,23 +54,23 @@ int main(int argc, char** argv) {
 	RoomObject wall_east("Wall1");
 	wall_east.pos[0] = 3.0;
 	wall_east.orientation = 0.0;
-	wall_east.width = 6.0 * SCALE;
-	wall_east.depth = 0.1 * SCALE;
+	wall_east.width = 6.0;
+	wall_east.depth = 0.1;
 	RoomObject wall_south("Wall1");
 	wall_south.pos[2] = 3.0;
-	wall_south.orientation = 1.5 * M_PI;
-	wall_south.width = 6.0 * SCALE;
-	wall_south.depth = 0.1 * SCALE;
+	wall_south.orientation = -M_PI_2;
+	wall_south.width = 6.0;
+	wall_south.depth = 0.1;
 	RoomObject wall_west("Wall1");
 	wall_west.pos[0] = -3.0;
 	wall_west.orientation = M_PI;
-	wall_west.width = 6.0 * SCALE;
-	wall_west.depth = 0.1 * SCALE;
+	wall_west.width = 6.0;
+	wall_west.depth = 0.1;
 	RoomObject wall_north("Wall2");
 	wall_north.pos[2] = -3.0;
 	wall_north.orientation = M_PI_2;
-	wall_north.width = 6.0 * SCALE;
-	wall_north.depth = 0.1 * SCALE;
+	wall_north.width = 6.0;
+	wall_north.depth = 0.1;
 
 	wall_east.update_access_space(NO_GAP);
 	wall_south.update_access_space(NO_GAP);
@@ -73,38 +82,43 @@ int main(int argc, char** argv) {
 	furnitures.push_back(&wall_west);
 	furnitures.push_back(&wall_north);
 
-	int STATIC_FNTS = 5;
-
 	RoomObject sofa1("Sofa");
 	sofa1.pos[0] = 0.0;
 	sofa1.pos[2] = 0.0;
-	sofa1.height = 0.3 * SCALE;
-	sofa1.width = 6.0 * SCALE;
-	sofa1.depth = 2.5 * SCALE;
+	sofa1.height = 0.3;
+	sofa1.width = 2.0;
+	sofa1.depth = 1.0;
 
 	RoomObject sofa2("Sofa");
 	sofa2.pos[0] = 0.0;
 	sofa2.pos[2] = 0.0;
-	sofa2.height = 0.3 * SCALE;
-	sofa2.width = 6.0 * SCALE;
-	sofa2.depth = 2.5 * SCALE;
+	sofa2.height = 0.3;
+	sofa2.width = 2.0;
+	sofa2.depth = 1.0;
 
 	sofa1.update_access_space(STANDARD_GAP);
 	sofa2.update_access_space(STANDARD_GAP);
 
-	RoomObject sofa3("Sofa");
-	sofa3.width = 6.0 * SCALE;
-	sofa3.depth = 2.5 * SCALE;
-	RoomObject sofa4("Bookcase");
-	sofa4.width = 1.0 * SCALE;
-	sofa4.depth = 0.4 * SCALE;
+	RoomObject sofa3("PCTable");
+	sofa3.width = 1.5;
+	sofa3.depth = 0.6;
+	RoomObject sofa4("Chair");
+	sofa4.width = 0.5;
+	sofa4.depth = 0.6;
+	sofa4.pairwise = "Chair and PC Table";
 	RoomObject sofa5("Bookcase");
-	sofa5.width = 1.0 * SCALE;
-	sofa5.depth = 0.4 * SCALE;
+	sofa5.width = 1.0;
+	sofa5.depth = 0.4;
 
 	sofa3.update_access_space(STANDARD_GAP);
 	sofa4.update_access_space(STANDARD_GAP);
 	sofa5.update_access_space(STANDARD_GAP);
+
+	sofa1.set_prev_node(&floor);
+	sofa2.set_prev_node(&floor);
+	sofa3.set_prev_node(&floor);
+	sofa4.set_prev_node(&sofa3);
+	sofa5.set_prev_node(&floor);
 
 	furnitures.push_back(&sofa1);
 	furnitures.push_back(&sofa2);
@@ -119,19 +133,19 @@ int main(int argc, char** argv) {
 	walls[3] = -3.0;
 
 	/*=================================*/
-
 	//test cost
 	//double test_cost = cost_function(furnitures, walls);
 
 	// Simulated Annealing
+	random_start(furnitures, walls);
 	double curr_cost = cost_function(furnitures, walls);
-	double new_cost = 0.0;;
+	double new_cost = 0.0;
 	vector<RoomObject*> new_fnts;
 	// Anealing Parameters
 	int MAX_ITER = 10000000;
 	double T0 = 10000.0;
 	double T = T0; // Initial Temperature
-	double beta = 0.01; // Boltzmann-like constant
+	double beta = 0.001; // Boltzmann-like constant
 	// Annealing starts
 	for (int i = 0; i < MAX_ITER; i++) {
 		// Pick a new layout for furnitures
@@ -140,12 +154,13 @@ int main(int argc, char** argv) {
 		new_fnts = translate_furnitures(furnitures, T, walls, chosen_index, STATIC_FNTS);
 		new_cost = cost_function(new_fnts, walls);
 		double accept_prob = min(1.0, exp((1.0 /(beta * T)) * (curr_cost - new_cost)));
-		srand(1);
+
 		// Update position
-		if (accept_prob >= ((double)rand() / (RAND_MAX))) {
-			// furnitures = new_fnts;
-			furnitures.at(chosen_index)->pos[0] = new_fnts.at(chosen_index)->pos[0];
-			furnitures.at(chosen_index)->pos[2] = new_fnts.at(chosen_index)->pos[2];
+		double rand_num = (double)rand() / RAND_MAX;
+		if (accept_prob >= rand_num) {
+			furnitures = new_fnts;
+			//furnitures.at(chosen_index)->pos[0] = new_fnts.at(chosen_index)->pos[0];
+			//furnitures.at(chosen_index)->pos[2] = new_fnts.at(chosen_index)->pos[2];
 			curr_cost = new_cost;
 		}
 		// Temperature drops
@@ -162,7 +177,8 @@ int main(int argc, char** argv) {
 		accept_prob = min(1.0, exp((1.0 / (beta * T)) * (curr_cost - new_cost)));
 		// Update Rotation
 		if (accept_prob >= ((double)rand() / (RAND_MAX))) {
-			furnitures.at(chosen_index)->orientation = new_fnts.at(chosen_index)->orientation;
+			furnitures = new_fnts;
+			//furnitures.at(chosen_index)->orientation = new_fnts.at(chosen_index)->orientation;
 			curr_cost = new_cost;
 		}
 		// Temperature drops
@@ -173,7 +189,7 @@ int main(int argc, char** argv) {
 		}
 		cout << curr_cost << endl;
 	}
-	
+
 
 	/* ============================= */
 
@@ -190,6 +206,8 @@ int main(int argc, char** argv) {
 		out << "\n";
 	}
 	out.close();
+
+	visualize_in_matlab_code(furnitures, "Mat_Visual.m");
 	
 	return 0;
 }
@@ -197,7 +215,7 @@ int main(int argc, char** argv) {
 vector<RoomObject*> translate_furnitures(vector<RoomObject*> fnts, double temp, double walls[], int &chosen_index, int static_fnts) {
 	vector<RoomObject*> new_fnts;
 	deep_copy_vector(fnts, new_fnts);
-	double deviation = 0.05 * temp;
+	double deviation = max(0.0001 * temp, 0.5);
 	
 	random_device rd1;
 	mt19937 generator(rd1());
@@ -250,14 +268,18 @@ vector<RoomObject*> rotate_furnitures(vector<RoomObject*> fnts, double temp, int
 // walls[]: 4 walls, assume we are in a standard 4-wall house
 double cost_function(vector<RoomObject*> fnts, double walls[]) {
 	double cost = 0.0;
-	double w_a = 0.1;
-	double w_pd = 1.0;
+	double w_a = 1.0;
+	double w_pd = 5.0;
 	double w_td = 10.0;
+	double w_wall_punish = 1.0;
+	double w_pr_dis = 1.0;
+	double w_pr_theta = 10.0;
+	double w_pr_side = 5.0;
 
 	RoomObject* fnt1 = NULL;
 	RoomObject* fnt2 = NULL;
 
-	for (int i = 0; i < fnts.size(); i++) {
+	for (int i = STATIC_FNTS; i < fnts.size(); i++) {
 		fnt1 = fnts.at(i);
 		// Calculate distance to walls
 		double d[4] = {abs(walls[0] - fnt1->pos[0]),	// distance to east wall
@@ -272,8 +294,12 @@ double cost_function(vector<RoomObject*> fnts, double walls[]) {
 
 		// Prior knowledge about the furniture
 		cost += w_pd * get_prior_distance_cost(Hashit(fnt1->type), min_d) + w_td * get_prior_theta_cost(Hashit(fnt1->type), theta);
+		cost += w_wall_punish * get_out_of_wall_punishment(fnt1, walls);
+		cost += w_pr_dis * get_pairwise_distance_cost(fnt1);
+		cost += w_pr_theta * get_pairwise_theta_cost(fnt1);
+		cost += w_pr_side * get_pairwise_side_cost(fnt1);
 
-		for (int j = 0; j < fnts.size(); j++) {
+		for (int j = STATIC_FNTS; j < fnts.size(); j++) {
 			fnt2 = fnts.at(j);
 			for (int k = 0; k < ACCESS_SPACE; k++) {
 				// Accessibility
@@ -285,12 +311,40 @@ double cost_function(vector<RoomObject*> fnts, double walls[]) {
 	return cost;
 }
 
+void random_start(vector<RoomObject*> &fnts, double walls[]) {
+	double right = walls[0];
+	double bottom = walls[1];
+	double left = walls[2];
+	double up = walls[3];
+
+	RoomObject* f;
+	double random;
+	srand(time(NULL));
+
+	for (int i = STATIC_FNTS; i < fnts.size(); i++) {
+		f = fnts.at(i);	
+
+		random = (double)rand() / RAND_MAX;
+		f->pos[0] = left + random * (right - left);
+
+		random = (double)rand() / RAND_MAX;
+		f->pos[2] = up + random * (bottom - up);
+
+		random = (double)rand() / RAND_MAX;
+		f->orientation = -M_PI + random * 2.0 * M_PI;
+	}
+}
+
 double get_accessibility(RoomObject* f1, RoomObject* f2, int k) {
 	double result = 0.0;
+
 	result = pow(f1->pos[0] - f2->access_space_center[k][0], 2) + pow(f1->pos[2] - f2->access_space_center[k][1], 2);
 	result = sqrt(result);
-	result = result / (f1->get_diagnol() + f2->access_space_diag[k]);
-	result = 1 - result;
+	result = result / (0.5 * (f1->get_diagnol() + f2->access_space_diag[k]));
+	if (result > 1.0) {
+		return 0.0;
+	}
+	result = 1.0 - pow(result, 2);
 	result = max(0.0, result);
 	return result;
 }
@@ -325,6 +379,199 @@ double get_theta(int index, double orientation) {
 	return theta;
 }
 
+double get_out_of_wall_punishment(RoomObject* f, double walls[]) {
+	double punishment = 100.0;
+	vector<double*> vertice = find_four_corners(f);
+	double x, y;
+	for (int i = 0; i < vertice.size(); i++) {
+		x = vertice.at(i)[0];
+		y = vertice.at(i)[1];
+
+		if ((x > walls[0]) || (x < walls[2])) {
+			return punishment;
+		}
+		else if ((y > walls[1]) || (y < walls[3])) {
+			return punishment;
+		}
+	}
+	return 0.0;
+}
+
+void visualize_in_matlab_code(vector<RoomObject*> fnts, string matlab_file) {
+	ofstream output;
+	output.open(matlab_file);
+
+	string code = "";
+	RoomObject* curr;
+
+	code += "clear;\n";
+	code += "hold on;\n";
+	for (int i = 1; i < fnts.size(); i++) {
+		curr = fnts.at(i);
+		string x1, x2, y1, y2, rotation, c_x, c_z, color;
+		string idx = to_string(i);
+		x1 = to_string(-(curr->width / 2.0));
+		x2 = to_string(curr->width / 2.0);
+		y1 = to_string(-(curr->depth / 2.0));
+		y2 = to_string(curr->depth / 2.0);
+		rotation = to_string(curr->orientation + M_PI_2);
+		c_x = to_string(curr->pos[0]);
+		c_z = to_string(curr->pos[2]);
+		if (curr->type.find("Wall") != string::npos) {
+			color = "\'r-\'";
+		}
+		else if (curr->type.find("PCTable") != string::npos) {
+			color = "\'g-\'";
+		}
+		else if (curr->type.find("Chair") != string::npos) {
+			color = "\'g-\'";
+		}
+		else {
+			color = "\'b-\'"; // blue
+		}
+
+		code += "X" + idx + " = [" + x1 + "," + x2 + "," + x2 + "," + x1 + "," + x1 + "];\n"; // Xi = [x1, x2, x2, x1, x1];
+		code += "Y" + idx + " = [" + y1 + "," + y1 + "," + y2 + "," + y2 + "," + y1 + "];\n";   // Yi = [y1, y1, y2, y2, y1];
+		code += "h" + idx + " = plot(X" + to_string(i) + ", Y" + to_string(i) + ", " + color + ", 'LineWidth', 3);\n";
+		code += "t" + idx + " = hgtransform('Parent', gca);\n"; // t = hgtransform('Parent',gca);
+		code += "set(h" + idx + ", \'Parent\', t" + idx + ")\n"; // set(h, 'Parent', t)
+		code += "Txy" + idx + " = makehgtform(\'zrotate\', " + rotation + ");\n"; // Txy = makehgtform('zrotate', rotation);
+		code += "Rxy" + idx + " = makehgtform(\'translate\', [" + c_x + " " + c_z + " 0]);\n";// Rxy = makehgtform('translate', [pos[0] pos[2] 0]);
+		code += "Trans" + idx + " = " + "Rxy" + idx + " * " + "Txy" + idx + ";\n"; // Trans = Rxy * Txy;
+		code += "set(t" + idx + ",\'Matrix\', Trans" + idx + ")\n"; // set(t,'Matrix',Trans)
+		code += "\n";
+	}
+	code += "set(gca,'Ydir','reverse')\n";
+	code.append("xlim([-4, 4]);\n");
+	code.append("ylim([-4, 4]);\n");
+	code.append("axis square;\n");
+
+	output << code;
+	output.close();
+}
+
+vector<double*> find_four_corners(RoomObject* f) {
+	vector<double*> corners;
+
+	double sign_x, sign_y;
+	double *coord;
+	for (int i = 0; i < 4; i++) {
+		if (i == 0 || i == 3) {
+			sign_x = 1.0;
+		}
+		else {
+			sign_x = -1.0;
+		}
+
+		if (i == 0 || i == 1) {
+			sign_y = 1.0;
+		}
+		else {
+			sign_y = -1.0;
+		}
+		coord = new double[2];
+		coord[0] = f->pos[0] + (sign_x * f->depth / 2.0) * cos(f->orientation) - (sign_y * f->width / 2.0) * sin(f->orientation);
+		coord[1] = f->pos[2] + (sign_x * f->depth / 2.0) * sin(f->orientation) + (sign_y * f->width / 2.0) * cos(f->orientation);
+		corners.push_back(coord);
+	}
+	return corners;
+}
+
+/* ================================================================ */
+/* Prior Knowledge */
+
+double get_prior_distance_cost(FurnitureCode type, double distance) {
+	double cost = 0.0;
+	switch (type) {
+	case Bed: cost = abs(distance - 0.5);
+		break;
+	case Sofa: cost = abs(distance - 0.5);
+		break;
+	case PCTable: cost = abs(distance - 0.3);
+		break;
+	case Bookcase: cost = abs(distance - 0.25);
+		break;
+	default: cost = 0.0;
+		break;
+	}
+	return cost;
+}
+
+double get_prior_theta_cost(FurnitureCode type, double theta) {
+	double cost = 0.0;
+	switch (type) {
+	case Bed: cost = abs(angleDiff(theta, M_PI));
+		break;
+	case Sofa: cost = abs(angleDiff(theta, M_PI));
+		break;
+	case PCTable: cost = abs(angleDiff(theta, M_PI));
+		break;
+	case Bookcase: cost = abs(angleDiff(theta, M_PI));
+		break;
+	default: cost = 0.0;
+		break;
+	}
+	return cost;
+}
+
+double get_pairwise_distance_cost(RoomObject* f) {
+	double cost = 0.0;
+	RoomObject* partner = f->get_prev_node();
+
+	double distance = pow(partner->pos[0] - f->pos[0], 2) + pow(partner->pos[2] - f->pos[2], 2);
+	distance = sqrt(distance);
+
+	if (f->pairwise == "Chair and PC Table") {
+		cost = abs(distance - 1.0);
+	}
+	else {
+		cost = 0.0;
+	}
+	return cost;
+}
+
+// Defines the orientation relationship between partners
+// For example the chair should face to desk
+double get_pairwise_theta_cost(RoomObject* f) {
+	double cost = 0.0;
+	RoomObject* partner = f->get_prev_node();
+
+	double theta_diff = angleDiff(f->orientation, partner->orientation);
+
+	if (f->pairwise == "Chair and PC Table") {
+		cost = abs(angleDiff(theta_diff, M_PI));
+	}
+	else {
+		cost = 0.0;
+	}
+	return cost;
+}
+
+// Defines which side to put the object, like front, back or sides
+double get_pairwise_side_cost(RoomObject* f) {
+	double cost = 0.0;
+	RoomObject* partner = f->get_prev_node();
+
+	double distance = pow(partner->pos[0] - f->pos[0], 2) + pow(partner->pos[2] - f->pos[2], 2);
+	distance = sqrt(distance);
+
+	double pos_angle = asin(abs(f->pos[2] - partner->pos[2]) / distance);
+	pos_angle = constrainAngle(pos_angle);
+	double angle_diff = angleDiff(pos_angle, partner->orientation);
+	
+	if (f->pairwise == "Chair and PC Table") {
+		cost = abs(angleDiff(angle_diff, 0.0));
+	}
+	else {
+		cost = 0.0;
+	}
+	return cost;
+}
+
+/* ================================================================ */
+
+/* ================================================================ */
+/* Utility */
 FurnitureCode Hashit(string type) {
 	if (type == "House") {
 		return House;
@@ -341,8 +588,8 @@ FurnitureCode Hashit(string type) {
 	else if (type == "Sofa") {
 		return Sofa;
 	}
-	else if (type == "Desk") {
-		return Desk;
+	else if (type == "PCTable") {
+		return PCTable;
 	}
 	else if (type == "Chair") {
 		return Chair;
@@ -354,8 +601,24 @@ FurnitureCode Hashit(string type) {
 }
 
 void deep_copy_vector(vector<RoomObject*> v, vector<RoomObject*> &new_v) {
+	// Copy Object
 	for (int i = 0; i < v.size(); i++) {
 		new_v.push_back(v.at(i)->clone());
+	}
+	// Re-link objects
+	RoomObject* prev = NULL;
+	int idx = 0;
+	RoomObject* new_mother;
+	RoomObject* new_child;
+	for (int i = 0; i < v.size(); i++) {
+		prev = v.at(i)->get_prev_node();
+		if (prev != NULL) {
+			idx = find_index(prev, v);
+			new_mother = new_v.at(idx);
+			new_child = new_v.at(i);
+			new_child->set_prev_node(new_mother);
+			new_mother->add_child(new_child);
+		}
 	}
 }
 
@@ -367,47 +630,20 @@ double constrainAngle(double x) {
 }
 
 double angleDiff(double a, double b) {
-	double dif = fmod(b - a + M_PI, 2*M_PI);
+	double dif = fmod(b - a + M_PI, 2 * M_PI);
 	if (dif < 0.0)
-		dif += 2*M_PI;
+		dif += 2 * M_PI;
 	return dif - M_PI;
 }
 
-/* ================================================================ */
-/* Prior Knowledge */
-
-double get_prior_distance_cost(FurnitureCode type, double distance) {
-	double cost = 0.0;
-	switch (type) {
-	case Bed: cost = abs(distance - 0.5);
-		break;
-	case Sofa: cost = abs(distance - 0.5);
-		break;
-	case Desk: cost = abs(distance - 0.5);
-		break;
-	case Bookcase: cost = abs(distance - 0.5);
-		break;
-	default: cost = 0.0;
-		break;
+int find_index(RoomObject* f, vector<RoomObject*> fnts) {
+	int idx = 0;
+	for (int i = 0; i < fnts.size(); i++) {
+		if (f == fnts.at(i)) {
+			idx = i;
+		}
 	}
-	return cost;
-}
-
-double get_prior_theta_cost(FurnitureCode type, double theta) {
-	double cost = 0.0;
-	switch (type) {
-	case Bed: cost = abs(angleDiff(theta, M_PI));
-		break;
-	case Sofa: cost = abs(angleDiff(theta, M_PI));
-		break;
-	case Desk: cost = abs(angleDiff(theta, M_PI));
-		break;
-	case Bookcase: cost = abs(angleDiff(theta, M_PI));
-		break;
-	default: cost = 0.0;
-		break;
-	}
-	return cost;
+	return idx;
 }
 
 /* ================================================================ */
