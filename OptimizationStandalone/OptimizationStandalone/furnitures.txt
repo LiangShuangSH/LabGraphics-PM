@@ -5,7 +5,7 @@ z=0
 orientation=0
 
 type=Wall1
-x=3
+x=4
 y=0
 z=0
 orientation=0
@@ -13,11 +13,11 @@ orientation=0
 type=Wall1
 x=0
 y=0
-z=3
+z=4
 orientation=-1.5708
 
 type=Wall1
-x=-3
+x=-4
 y=0
 z=0
 orientation=3.14159
@@ -25,36 +25,42 @@ orientation=3.14159
 type=Wall2
 x=0
 y=0
-z=-3
+z=-4
 orientation=1.5708
 
 type=Sofa
-x=-1.76418
+x=3.44737
 y=0
-z=2.47951
-orientation=-4.70828
+z=-0.458766
+orientation=3.14808
 
-type=Sofa
-x=2.49182
+type=Bed
+x=-3.24369
 y=0
-z=-0.472545
-orientation=-3.14182
+z=1.56296
+orientation=-0.000910276
 
 type=PCTable
-x=-2.63631
+x=-0.0517739
 y=0
-z=-0.383187
-orientation=0.0017645
+z=3.68496
+orientation=-4.72793
 
 type=Chair
-x=-1.48273
+x=-0.0425147
 y=0
-z=-0.366337
-orientation=3.14712
+z=2.24163
+orientation=-1.58641
 
 type=Bookcase
-x=0.832163
+x=3.76144
 y=0
-z=2.75276
-orientation=1.57079
+z=-3.03532
+orientation=3.14346
+
+type=Sofa
+x=-0.247228
+y=0
+z=-3.47588
+orientation=4.71678
 
