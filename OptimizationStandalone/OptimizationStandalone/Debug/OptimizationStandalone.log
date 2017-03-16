@@ -1,14 +1,18 @@
 ﻿  Optimization.cpp
-c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(216): warning C4018: '<': signed/unsigned mismatch
-c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(299): warning C4018: '<': signed/unsigned mismatch
-c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(319): warning C4018: '<': signed/unsigned mismatch
-c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(339): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(341): warning C4018: '<': signed/unsigned mismatch
-c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(402): warning C4018: '<': signed/unsigned mismatch
-c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(426): warning C4018: '<': signed/unsigned mismatch
-c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(473): warning C4018: '<': signed/unsigned mismatch
-c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(634): warning C4018: '<': signed/unsigned mismatch
-c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(642): warning C4018: '<': signed/unsigned mismatch
-c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(670): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(212): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(295): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(315): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(335): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(337): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(398): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(422): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(544): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(547): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(554): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(564): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(725): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(733): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(761): warning C4018: '<': signed/unsigned mismatch
+c:\users\shuang\documents\cs\basic lab\final project\optimizationstandalone\optimizationstandalone\optimization.cpp(770): warning C4018: '<': signed/unsigned mismatch
   OptimizationStandalone.vcxproj -> C:\Users\Shuang\Documents\CS\Basic Lab\Final Project\OptimizationStandalone\Debug\OptimizationStandalone.exe
   OptimizationStandalone.vcxproj -> C:\Users\Shuang\Documents\CS\Basic Lab\Final Project\OptimizationStandalone\Debug\OptimizationStandalone.pdb (Full PDB)

@@ -10,11 +10,12 @@ enum FurnitureCode {
 	House = 0,
 	Wall = 1,
 	Floor = 2,
-	Bed = 3,
-	Sofa = 4,
-	PCTable = 5,
-	Chair = 6,
-	Bookcase = 7
+	Ceiling = 3,
+	Bed = 4,
+	Sofa = 5,
+	PCTable = 6,
+	Chair = 7,
+	Bookcase = 8
 };
 
 class RoomObject {

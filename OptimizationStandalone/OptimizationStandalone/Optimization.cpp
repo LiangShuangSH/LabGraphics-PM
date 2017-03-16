@@ -16,8 +16,9 @@ using namespace std;
 int ACCESS_SPACE = 4;
 double STANDARD_GAP = 0.0;
 double NO_GAP = 0.0;
-int STATIC_FNTS = 5;
+int STATIC_FNTS = 0;
 
+vector<RoomObject*> get_furnitures(string file, int& static_num, double walls[]);
 vector<RoomObject*> translate_furnitures(vector<RoomObject*> fnts, double temp, double walls[], int &chosen_index, int static_fnts);
 vector<RoomObject*> rotate_furnitures(vector<RoomObject*> fnts, double temp, int &chosen_index, int static_fnts);
 double get_accessibility(RoomObject* f1, RoomObject* f2, int k);
@@ -39,17 +40,20 @@ double get_pairwise_side_cost(RoomObject* f);
 int find_index(RoomObject* f, vector<RoomObject*> fnts);
 void random_start(vector<RoomObject*> &fnts, double walls[]);
 void record_cost(vector<double> costs, string out_file);
+void adopt_child(vector<RoomObject*> fnts, RoomObject* mother, string child_name);
 
 int main(int argc, char** argv) {
+
+	double walls[4];
 	
 	/*=================================*/
 	/* Test Input */
-	vector<RoomObject*> furnitures;
+	vector<RoomObject*> furnitures = get_furnitures("input.txt", STATIC_FNTS, walls);
 
-	/* Add floor and walls for testing */
+	/* Manually Add floor and walls for testing */
 	// Floor and Walls;
-	RoomObject floor("Floor");
-	floor.pos[1] = 0.01;
+	/*RoomObject floor("Floor");
+	floor.pos[1] = 0.001;
 	furnitures.push_back(&floor);
 
 	RoomObject wall_east("Wall1");
@@ -135,17 +139,9 @@ int main(int argc, char** argv) {
 	furnitures.push_back(&sofa3);
 	furnitures.push_back(&sofa4);
 	furnitures.push_back(&sofa5);
-	furnitures.push_back(&f6);
-
-	double walls[4];
-	walls[0] = 4.0;
-	walls[1] = 4.0;
-	walls[2] = -4.0;
-	walls[3] = -4.0;
+	furnitures.push_back(&f6);*/
 
 	/*=================================*/
-	//test cost
-	//double test_cost = cost_function(furnitures, walls);
 
 	// Simulated Annealing
 	random_start(furnitures, walls);
@@ -423,7 +419,7 @@ void visualize_in_matlab_code(vector<RoomObject*> fnts, string matlab_file) {
 	code += "clear;\n";
 	code += "figure;\n";
 	code += "hold on;\n";
-	for (int i = 1; i < fnts.size(); i++) {
+	for (int i = 0; i < fnts.size(); i++) {
 		curr = fnts.at(i);
 		string x1, x2, y1, y2, rotation, c_x, c_z, color;
 		string idx = to_string(i);
@@ -465,6 +461,101 @@ void visualize_in_matlab_code(vector<RoomObject*> fnts, string matlab_file) {
 
 	output << code;
 	output.close();
+}
+
+vector<RoomObject*> get_furnitures(string file, int& static_num, double walls[]) {
+	vector<RoomObject*> fnts;
+	vector<vector<string>> children_list;
+
+	// Open File
+	ifstream ifs(file);
+	string line;
+	// Define Delimiters
+	string SN = "Static_Number=";
+	string WALLS = "Walls=";
+	string TYPE = "type=";
+	string X = "x=";
+	string Z = "z=";
+	string WIDTH = "width=";
+	string DEPTH = "depth=";
+	string ORI = "orientation=";
+	string PW = "pairwise=";
+	string CHILDREN = "children=";
+
+	int pos = 0;
+
+	if (ifs.is_open()) {
+		while (getline(ifs, line)) {
+			// Find Static Number
+			if ((pos = line.find(SN)) != std::string::npos) {
+				static_num = stoi(line.substr(pos + SN.length()));
+			}
+			// Find Walls
+			else if ((pos = line.find(WALLS)) != std::string::npos) {
+				string values = line.substr(pos + WALLS.length());
+				for (int i = 0; i < 4; i++) {
+					walls[i] = stod(values.substr(0, values.find(",")));
+					values.erase(0, values.find(",") + 1);
+				}
+			}
+			// Find Type
+			else if ((pos = line.find(TYPE)) != std::string::npos) {
+				string type = line.substr(pos + TYPE.length());
+				RoomObject* fnt = new RoomObject(type);
+				fnts.push_back(fnt);
+			}
+			// x
+			else if ((pos = line.find(X)) != std::string::npos) {
+				fnts.back()->pos[0] = stod(line.substr(pos + X.length()));
+			}
+			// z
+			else if ((pos = line.find(Z)) != std::string::npos) {
+				fnts.back()->pos[2] = stod(line.substr(pos + Z.length()));
+			}
+			// width
+			else if ((pos = line.find(WIDTH)) != std::string::npos) {
+				fnts.back()->width = stod(line.substr(pos + WIDTH.length()));
+			}
+			// depth
+			else if ((pos = line.find(DEPTH)) != std::string::npos) {
+				fnts.back()->depth = stod(line.substr(pos + DEPTH.length()));
+			}
+			// orientation
+			else if ((pos = line.find(ORI)) != std::string::npos) {
+				fnts.back()->orientation = stod(line.substr(pos + ORI.length()));
+			}
+			// pairwise
+			else if ((pos = line.find(PW)) != std::string::npos) {
+				fnts.back()->pairwise = line.substr(pos + PW.length());
+			}
+			// children
+			else if ((pos = line.find(CHILDREN)) != std::string::npos) {
+				vector<string> children;
+				string children_string = line.substr(pos + CHILDREN.length());
+				while (children_string != "") {
+					children.push_back(children_string.substr(0, children_string.find(",")));
+					children_string.erase(0, children_string.find(",") + 1);
+				}
+				children_list.push_back(children);
+			}
+		}
+	}
+	// Set links
+	for (int i = 0; i < children_list.size(); i++) {
+		vector<string> children = children_list.at(i);
+		if (!children.empty()) {
+			for (int j = 0; j < children.size(); j++) {
+				string child = children.at(j);
+				adopt_child(fnts, fnts.at(i), child);
+			}
+		}
+	}
+	// Initialize Gap
+	for (int i = static_num; i < fnts.size(); i++) {
+		fnts.at(i)->update_access_space(STANDARD_GAP);
+	}
+
+	return fnts;
 }
 
 void record_cost(vector<double> costs, string out_file) {
@@ -673,6 +764,18 @@ int find_index(RoomObject* f, vector<RoomObject*> fnts) {
 		}
 	}
 	return idx;
+}
+
+void adopt_child(vector<RoomObject*> fnts, RoomObject* mother, string child_name) {
+	for (int i = 0; i < fnts.size(); i++) {
+		RoomObject* child = fnts.at(i);
+		if (child->type == child_name
+			&& child->get_prev_node() == NULL) {
+			mother->add_child(child);
+			child->set_prev_node(mother);
+			break;
+		}
+	}
 }
 
 /* ================================================================ */
