@@ -35,38 +35,38 @@ z=-4
 orientation=1.5708
 
 type=Sofa
-x=3.44527
+x=-3.46551
 y=0
-z=-1.78243
-orientation=3.11916
+z=-2.41517
+orientation=0.00101284
 
 type=Sofa
-x=-3.44873
+x=2.22702
 y=0
-z=0.47658
-orientation=0.00183597
+z=3.46507
+orientation=1.56737
 
 type=Bed
-x=-2.79393
+x=-3.22019
 y=0
-z=-3.18375
-orientation=4.68265
+z=-0.180993
+orientation=0.014974
 
 type=PCTable
-x=-0.3893
+x=-3.60201
 y=0
-z=3.58994
-orientation=1.5136
+z=1.56637
+orientation=0.0470372
 
 type=Chair
-x=-0.509127
+x=-2.27899
 y=0
-z=2.39733
-orientation=-1.62801
+z=1.47744
+orientation=3.1886
 
 type=Bookcase
-x=-1.90761
+x=-1.73655
 y=0
-z=3.70801
-orientation=-4.68425
+z=-3.75833
+orientation=4.7075
 
